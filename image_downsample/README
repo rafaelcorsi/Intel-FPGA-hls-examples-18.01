@@ -1,0 +1,6 @@
+This design example implements an image downsampling algorithm to scale an
+image to a smaller size using bilinear interpolation.
+
+The testbench reads an image from test.bmp, emits a scaled down version to
+downsampled.bmp, and compares the results to a golden reference image in
+expected.bmp.

@@ -1,0 +1,42 @@
+This tutorial demonstrates how to use a single ac_int instead of a struct to
+implement a contiguous interface with no padding.
+
+In this tutorial, the IPv4 header is used as an example to demonstrate this. Two
+classes are defined in this example:
+1. A byte aligned struct (184 bits): class IPPacketHeader_padding
+2. A ac_int type (160 bits)        : class IPPacketHeader_no_padding
+
+The class IPPacketHeader_padding is the common implementation of the IPv4
+header. Each packet field is encoded separately inside the struct. The alignment
+inside the struct is to the nearest byte, so this introduces padding for packet
+fields that are not byte-aligned(ac_ints are byte aligned, not bit aligned).
+This class is also declared as "packed" so as to enable byte-alignment.
+With this padding, the component has an interface width of 184 bits.
+
+The class IPPacketHeader_no_padding is an alternate example that uses a single
+ac_int to create a contiguous interface on the component. In this case, there is
+no padding in between the packet fields and the component interface width becomes
+the exact number of bits of the packet size (i.e. 160).
+
+The two components in this example do the exact same operations (i.e. computing
+the has value of the IP Packet), but on the two different classes defined. The
+two components have nearly the same QoR metrics.
+
+To observe the differences in the interface size, open
+tutorial.prj/components/get_hash_padding/get_hash_padding_internal.v and
+tutorial.prj/components/get_hash_no_padding/get_hash__no_padding_internal.v to
+see the corresponding interface size of two components. The ac_int
+implementation has a bitwidth of 160 bits for the packet input, whereas the
+struct implementation is 184 bits.
+
+Also open tutorial.prj/reports/report.html and observe the Quartus report in
+the summary page to see the ALMs and Registers(FFs) count are (almost) exactly
+same between the two components.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

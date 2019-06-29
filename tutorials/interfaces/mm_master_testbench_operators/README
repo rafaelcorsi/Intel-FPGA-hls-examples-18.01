@@ -1,0 +1,12 @@
+
+This tutorial demonstrates use of the getInterfaceAtIndex(int) operator on a
+memory-mapped master.  This is similar to indexing into an array.  See the
+corresponding comments in the code for more details.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

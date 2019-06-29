@@ -1,0 +1,11 @@
+This design example implements a basic YUV422 to RGB888 colour space conversion.
+
+The component in this example reads a single YUV422 word (representing two YUV
+pixels) and emits two RGB888 words (representing two RGB pixels).
+
+The testbench reads image_in.bmp (an RGB encoded bitmap), converts the data to
+YUV422 format, then passes the YUV422 data to the component to convert back to
+RGB format.  The resulting RGB image (which has undergone two colour space
+transformations: RGB888 -> YUV422 -> RGB888) is emitted to image_out.bmp.  For
+the sample image provided, the output can be compared to image_out.bmp.golden
+to verify correctness.

@@ -1,0 +1,2 @@
+This design example demonstrates a trivial counter.  The component
+initializes a static counter to 0, and increments on every call.

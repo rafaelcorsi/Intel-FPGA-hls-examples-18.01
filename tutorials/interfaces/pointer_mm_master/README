@@ -1,0 +1,121 @@
+The HLS compiler follows C semantics when synthesizing pointer arguments. That is, 
+the pointer input is considered to be an address to data that is stored in system 
+memory outside of the component. Therefore a pointer argument results in two interfaces
+on a component:
+  1) An input conduit with the argument's name
+  2) An Avalon-MM interface, which is to be connected to the system's memory that stores
+     the data pointed to by the address in (1).
+     NOTE: This MM interface can be shared amongst multiple pointer/mm_master<> arguments
+
+Deciding what combinations of Avalon-MM interfaces your component uses is dependent on both 
+the desired area and performance of the component, as well as constraints from the system 
+(ie. what type of memory is available, is there contention on the memory bus, etc.).
+
+This tutorial consists of 5 parts, which are best observed in order.
+
+part_1_pointers.cpp
+  This design implements a simple vector add operation on data stored in memory outside of the component.
+  This tutorial will iterate on this design to explore the various options available to customize
+  and optimize the memory mapped interfaces on the component.
+  Observations:
+    1) Look at part_1_pointers.prj/components/vector_add/vector_add_inst.v and note that there are
+       three input conduits for the pointer arguments a, b, and c and only one Avalon-MM master
+       interface.
+    2) Open the simulation waveform (part_1_pointers.prj/verification/vsim.wlf) in Modelsim and view
+       the signals on the vector_add_inst interface. Note that the memory accesses to a, b, and c
+       are serialized on the single shared Avalon-MM master interface.
+
+part_2_masters.cpp
+  This design implements the same vector add operation as part 1, but it uses the mm_master<>
+  class to specialize the Avalon-MM interfaces on the component.
+  Observations:
+    1) Compare this source file with the source from part 1. Note that going from a pointer to
+       an mm_master<> only requires changes to the component's arguments and the testbench.
+    2) Look at part_2_masters.prj/components/vector_add/vector_add_inst.v and compare the component's
+       interfaces to those of part 1. Note that there are now 3 Avalon-MM interfaces (one for 
+       each unique id).
+    3) Navigate to the "Area analysis of system" view of the report and compare the area estimates with
+       part 1. Note the area savings due to stall free memory accesses and the removal of 
+       arbitration logic, both of which come from separating the accesses into their own
+       interfaces.
+    4) Open masters.prj/reports/report.html and navigate to the "Verification statistics" view. 
+       Compare the component's latency with part 1 and note that it is much lower.
+    5) Open the simulation waveform (part_2_masters.prj/verification/vsim.wlf) in Modelsim and view
+       the signals on the vector_add_inst interface. Note that the improved latency is
+       achieved because the component has access to all 3 memories in parallel without contention.
+
+part_3_ddr_masters.cpp
+  Most of the time, a component's interfaces will be subject to system constraints. For this part, 
+  assume that the input and output vectors are too large for on-chip memory with 1 clock cycle 
+  read latency, but that the system has two banks of DDR, with a data bus of 256-bits and 
+  support for bursts of up to 8 requests. The Avalon-MM Master Interface Specifications indicate that
+  the waitrequest signal is necessary when the maxburst exceeds 1.
+  Observations:
+    1) Compare this source file with the source from part 2. Note that the parameterization of the 
+       mm_master<> arguments has been changed to conform to the interfaces provided by the system.
+       Specifically, the latency of the interfaces has been set to 0 to indicate that it is variable.
+       The inputs "a" and "b" will be stored in the first DDR bank (id<1>) and the output "c" will
+       be stored in the second bank (id<2>).
+    2) Look at part_3_ddr_masters.prj/components/vector_add/vector_add_inst.v and note that there are now
+       only two Avalon-MM interfaces, and that they now have additional signals (such as readdata_valid)
+       when compared with part 2.
+    3) Navigate to the "Area analysis of source" view of the report and compare the area estimates with
+       those of part 2. While not a true apples-to-apples comparison, viewing the area required by the 
+       load and store operations at part_3_ddr_masters.cpp:12 shows that these now consume many more
+       resources. In particular, the RAM utilization has increased significantly so that these
+       accesses can efficiently handle the variable nature of the interface.
+
+part_4_ddr_masters_coalesce.cpp
+  The component in part 3 makes poor use of the available DDR bandwidth because of it's small 
+  (32-bit) accesses. While the load and store units alleviate some of this through dynamic 
+  coalescing, making a small change to the source to allow the compiler to coalesce statically
+  and can help both throughput and area dramatically.
+  Observations:
+    1) Compare this source file with the source from part 3. Note that the only difference
+       is an unroll factor of 8 applied to the for loop. The factor of 8 was chosen to match the 
+       width of the memory interface (256/32 = 8).
+    2) Navigate to the "Component viewer" view of the report and note that for a, b, and c the
+       8 sequential accesses to memory have been coalesced into a single wide access and the 
+       additions for those 8 values are done in parallel.
+    3) Navigate to the "Area analysis of system" view of the report and compare the area estimates with
+       those of part 3. Note that despite the fact that the data path is now 8 times wider, the area
+       increase is much less than 8x.
+    4) Navigate to the "Verification statistics" view of the report and compare the latency of this
+       component to that of part 3. Note that the component's latency has dropped significantly due to
+       the more efficient memory accesses. In the context of observation (3), this is a good tradeoff
+       between area and throughput.
+    5) Navigate to the "Component viewer" view of the report and click on one of the loads or stores.
+       Note that the type is burst-coalesced-non-aligned. The non-aligned in the type means that 
+       the coalesced word might span two memory words, since the underlying type is an int
+       which has an alignment of 4-bytes. This is sub-optimal, because extra logic is required to
+       handle this case at each load/store.
+       For example:
+       a[0:7]                |----------------------------------------------------------------------------------------|
+       mem           |----------------------------------------------------------------------------------------|---------
+                 byte 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 0 1 2 3 4
+                               memory word 0                                                                    memory word 1
+
+
+part_5_ddr_masters_align.cpp
+  The compiler needs additional information (and guarantees from the system) in order to
+  know that the coalesced memory accesses in part 4 will be aligned with memory words. This
+  part uses the align<> parameter of mm_masters<> to provide this information.
+  Observations:
+    1) Compare this source file with the source from part 4. Note that the only difference is
+       the addition of the align<> parameter to the mm_master<> arguments.
+    2) Navigate to the "Component viewer" view of the report and click on one of the loads or stores.
+       Note that the type is now burst-coalesced, so all of the re-alignment logic required by
+       the previous part is no longer required.
+    3) Navigate to the "Area analysis of system" view of the report and compare the area estimates with
+       those of part 4. Note the significant drop in logic utilization due to the simpler loads and stores.
+       If the two designs were run through Quartus (using the provided projects in <part>.prj/quartus/) it
+       would show that the Fmax of the component is also improved significantly.
+
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

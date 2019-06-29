@@ -1,0 +1,83 @@
+This design example implements a QR matrix decomposition using the Modified
+Gram-Schmidt (MGS) algorithm. For more details, please see this whitepaper:
+
+https://www.altera.com/en_US/pdfs/literature/wp/wp-01277-advanced-qrd-optimization-with-intel-hls-compiler.pdf
+
+If you are using Linux, you can build the design using the following command: 
+
+    make
+
+If you are using Windows, you can build the design using the following command:
+
+    build.bat
+
+You can adjust the following component parameters in MGS.h before compiling:
+
+- ROWS_COMPONENT: This constant defines the maximal number of rows that the QRD
+  component can process. A smaller matrix can also be processed, but there is a
+  performance penalty if the input matrix is smaller than the maximal size. For
+  example, processing a 4x4 matrix in a 16x16 component will be slower than
+  processing a 4x4 matrix in a 4x4 component. You can override this constant at
+  the command line by using -DROWS_COMPONENT=<size>. For example: 
+  
+      i++ <...> -DROWS_COMPONENT=4 (Default 8)
+
+- COLS_COMPONENT: This constant defines the maximal number of columns that the
+  QRD component can process. You can override this constant at the command line
+  by adding a -DCOLS_COMPONENT=<size> flag For example:
+  
+      i++ <...> -DCOLS_COMPONENT=4 (Default 8)
+
+- DOUBLE_PRECISION: If DOUBLE_PRECISION is defined, then the component performs
+  double-precision floating-point arithmetic instead of single-precision
+  arithmetic. If it is not defined (default) then single-precision
+  floating-point arithmetic is performed. Double-precision arithemetic consumes
+  more area and latency, but it produces more precise results. (Default off)
+
+
+To change how the component is tested, adjust the following testbench
+parameters in the QRD_Testbench.cpp file:
+
+- RANDOM_TEST: If RANDOM_TEST is defined, then the testbench streams a number
+  of random matrices into the component. (Default on) 
+
+- NUM_TESTS: This macro specifies how many random matrices the testbench
+  streams into the component. (Default 5)
+
+- TEST_ROWS/TEST_COLS: These constants specify the number of rows and columns
+  in the randomly generated matrices. You can override the TEST_ROWS and
+  TEST_COLS constants from the command line by adding -DTEST_ROWS and
+  -DTEST_COLS compiler flags (similarly to ROWS_COMPONENT and COLS_COMPONENT).
+  These constants should be less than or equal to ROWS_COMPONENT and
+  COLS_COMPONENT, respectively. (Default 8 and 8)
+
+- RANDOM_SEED: This constant specifies the seed value used by srand() in the
+  testbench. (Default 1138)
+
+- RANDOM_MIN: This constant specifies the smallest possible value that can
+  appear in a randomly generated matrix. (Default -10)
+
+- RANDOM_MAX: This constant specifies the largest possible value that can
+  appear in a randomly generated matrix. (Default 10)
+
+- PREDEFINED_TEST: If PREDEFINED_TEST is defined, then the testbench runs
+  pre-defined tests that stream matrices with well-known QR factorizations to
+  the component. See QRD_Testbench.cpp for more details about these matrices.
+  PREDEFINED_TEST may be defined along with RANDOM_TEST to test the component
+  with both predefined and randomly generated matrices. (Default on)
+
+- SHOW_MATRICES: If SHOW_MATRICES is defined, then the testbench prints the
+  calculated Q and R matrices to stdout. (Default on) 
+
+- EPSILON: This constant defines the acceptable level of error between
+  predicted values and calculated values. Smaller values of EPSILON will cause
+  tests to be more likely to fail. You can override this constant at the
+  command line by adding the -DEPSILON=<value> flag. For example:
+  
+    i++ <...> -DEPSILON=1e-7 (Default 2.0e-5)
+
+Add your own predefined test to QRD_Testbench.cpp by following the conventions
+shown in the QRD_Testbench.cpp file.
+
+
+

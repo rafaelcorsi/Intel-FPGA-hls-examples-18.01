@@ -1,0 +1,123 @@
+This tutorial demonstrates how the user can specify bits from a memory's address
+to use as bank-select bits. Using the 'bank_bits' attribute, a user can separate
+a memory's data into multiple banks while specifying which address bits should
+be used to select the bank. The bank_bits specified also imply which bank
+contains which data element. By selecting bank bits that intelligently
+organizes the data into the banks in a manner that conforms with the memory's
+access pattern, the accesses can be made to be stall-free.
+
+Examine the code in tutorial.cpp to see how a user can tell the compiler which
+address bits to use as bank-select bits. Run the makefile and navigate to the
+HTML report (located in [ProjectFolder].prj/reports/report.html) in the
+following order:
+
+1. tutorial-no-bank-bits.prj
+  The HLS component bank_arb_consecutive_multidim declares a three dimensional
+  array "a" with size 2, 4, and 128 along each dimension. In an unrolled
+  for loop of length 4, write some values into the array. Then the return value
+  rdata is accumulated while reading back the values from the array in another
+  unrolled for loop of length 4. Note that the index of the for loop is used to
+  indicate the address of the array a to write/read.
+
+  Open the HTML report and navigate "System viewer" from the dropdown menu
+  "View reports" ->"System viewer".
+
+  Observations:
+  1. The store (ST(x4)) and load (LD(x4)) nodes to the local memory "a" are
+     stall-able, as evident in the details pane when hovering over the nodes.
+  2. Hovering over the "a" component memory shows that it has only 2 banks. Note
+     that the number of banks is also shown in brackets in the node name:
+     "a [2]".
+
+  Ideally, there will be 4 banks created so that the store and load
+  operations can be done concurrently without being stall-able.
+
+  Now open "Component memory viewer" from the dropdown menu. Under
+  "Memory List" pane, click on the memory "a" to render the memory system in
+  the "Component memory viewer" pane.
+
+  Observations:
+  1. Each store/load accesses both banks, as evident from hovering on a node
+     and noting the highlighted path towards the ports on both banks.
+  2. Each bank has 4 ports, which are each arbitrated (ARB node) between a store
+     and a load.
+
+  Finally, open the "Area Analysis of the system" report in the dropdown menu.
+  Click on "Expand All" to expand all the rows. The component memory "a" is
+  located in the 5th row "tutorial.cpp:32 (a)". Click on that row
+
+  Observations on the details section:
+  1. The banking is done on the lowest dimension into 2 banks. Note that by
+     default, the compiler banks on the lowest dimension.
+  2. The additional information suggests to reduce the number of write accesses
+     or fix banking to make this memory system stall-free.
+
+  Therefore, the reason that there are only 2 banks and a lot of arbitrations
+  is because the banking is done on the lowest dimension. The compiler cannot
+  infer that the store and load operations go to separate banks if it is
+  banking on the lowest dimension:
+
+      a[upperdim][i][(waddr & 0x7f)] = ...;  // store
+      ... += a[upperdim][i][(raddr & 0x7f)]; // load
+
+  Since the compiler cannot infer that the store and load operations go to
+  separate banks, they must be connected to all the banks.
+
+2. tutorial-good-bank-bits.prj
+  It is clear from the access pattern that the intention is for the banking to
+  occur on the second dimension of array "a". Therefore, this design adds
+            __attribute__((bank_bits(8,7),bankwidth(4)))
+  when declaring the array a in order to bank on bits 7 and 8.
+
+  Open the HTML report and navigate "System viewer" from the dropdown menu
+  "View reports" ->"System viewer".
+
+  Observations:
+  1. The store (ST(x4)) and load (LD(x4)) nodes to the component memory "a" are
+     are stall free, as evident in the details pane when hovering over the
+     nodes.
+  2. The "a" component memory has 4 banks, as desired.
+
+  Now open "Component memory viewer" from the dropdown menu and click on "a"
+
+  Observations:
+  1. There are no arbitration (ARB) nodes. The ST and LD nodes are stall free.
+  2. Each ST and LD operation accesses different banks and different ports
+
+  The lowest dimension of "a" has size 128, which is 7 bits.  The next 2 bits in
+  the second dimension are the bits being specified by the for loop index "i".
+  Therefore, bits 7 and 8 are the correct bits to bank on.
+
+3. tutorial-bad-bank-bits.prj
+  This design examines the result of choosing to bank on the incorrect bits. The
+  attribute to bank on bits 3 and 4 is added when declaring array "a":
+            __attribute__((bank_bits(4,3),bankwidth(4)))
+
+  Open the HTML report and navigate "System viewer" from the dropdown menu
+  "View reports" ->"System viewer".
+
+  Observations:
+  1. The store (ST(x4)) and load (LD(x4)) nodes to the component memory "a" are
+     stall-able, as evident in the details pane when hovering over the nodes.
+  2. The "a" component memory has 4 banks, as desired.
+
+  While we were able to get to the desired number of banks, the ST/LD operations
+  are still stall-able as in the first example. To examine the cause, open
+  "Component memory viewer" from the dropdown menu and click on "a"
+
+  Observations:
+  1. Each store/load accesses all 4 banks, as evident from hovering on a node
+     and noting the highlighted path towards the ports on both banks.
+  2. Each bank has 2 ports, which are each arbitrated (ARB node) between 2
+     stores and 2 loads.
+
+  With the incorrect bits to bank on, the compiler needs to connect all the
+  ST and LD instructions to all the banks, and due to the large number of ST/LD
+  operations they must arbitrate between multiple ST/LD operations.
+
+This tutorial requires the following tools to be installed:
+  - i++
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

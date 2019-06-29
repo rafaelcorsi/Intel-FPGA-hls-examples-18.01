@@ -1,0 +1,32 @@
+The HLS compiler considers global variables to exist outside of the component.
+Because the component does not own global values, the compiler is unable to
+make any assumptions about the value when performing optimizations.  Even if
+the testbench maintains a global variable with a constant value, the compiler
+will not assume that the variable is constant in all situations.  On the other
+hand, const qualified global variables are guaranteed to remain constant in
+all situations.  So const qualified global variables can be folded into the
+component and fully optimized.
+
+For good quality of results, we recommend avoiding the use of mutable global
+variables in a component.  Use of const qualified global variables is okay.
+
+The area report and interfaces can be used to help identify expensive
+references to global variables:
+  1) Look at <project>/components/scale_value/scale_value_inst.v.  Notice the
+     creation of a scale_factor port and an Avalon-MM interface in the case of
+     a mutable global.  These interfaces are used to pass the location and
+     fetch the value of 'scale_factor' from an external memory.  In the const
+     qualified case the constant is optimized into the datapath and does not
+     need to be fetched.
+  2) Look at <project>/reports/report.html and open the Area analysis of source.  Notice
+     the version with a mutable global is over 50% larger than the const
+     qualified version. A large portion of this extra area is due to the additional
+     load from global memory under line 'tutorial.cpp:17' of the area report. 
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim-SE
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

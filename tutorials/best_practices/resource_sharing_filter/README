@@ -1,0 +1,38 @@
+This tutorial demonstrates two versions of a 32-tap fir filter design. The two
+component instances are named "firfilt" and "firfilt_shared". The former
+is a high-throughput version of a fir-filter and can accept a new a sample every
+cycle and returns a result every cycle (though it has some latency between the
+start and the done). The "firfilt_shared" version is a low-throughput but
+low-area version of the fir-filter. The "firfilt" version uses 32 multipliers
+implemented using 32 DSP blocks. It also uses a 32-tap shift register, coded as
+per the recommended standard for the Intel HLS compiler (for more details,
+observe the shift-register tutorial design). The "firfilt_shared" uses a
+rolled loop and effectively resource shares the floating point multiplier, thus
+using just a single DSP block. This version, instead of the shift register, uses
+a circular buffer with a single READ and a single WRITE site. Since there are
+only two accesses per component invocation, this can be efficiently implemented
+in an M20K block without any arbitration logic. This is more area-efficient than
+a shift-register.
+
+The estimate for the number of DSP and RAM blocks used by the two designs can be
+observed in the "Area analysis of system" or "Area analysis of source" views in
+the HTML report located at tutorial.prj/reports/report.html. When comparing the
+two designs, it's evident that the shared version has a much lower area overhead
+in comparison to the high throughput version. Looking at the verification
+statistics view, it will also be clear that the "firfilt_shared" has a much
+higher component II and latency due to the rolled multiplier.
+
+The same can be said about scaling these two implementations to larger number In
+terms of scaling the two designs, the "firfilt" version will grow in area
+with respect to the number of taps without too much of an impact on the
+component II. The "firfilt_shared" design, on the other hand, will not grow
+in area as quickly but rather in latency and component II with the number of
+taps.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim-SE
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

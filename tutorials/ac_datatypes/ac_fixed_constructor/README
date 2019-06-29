@@ -1,0 +1,15 @@
+This design example demonstrates the usage of ac_fixed constructor where
+higher QoR can be achieved using minor variations in coding style:
+
+By converting dynamic double/float value outside of component code 
+will show significant QoR gain in area.
+
+You can view QoR result in tutorial-fpga.prj/reports/report.html.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim-SE
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

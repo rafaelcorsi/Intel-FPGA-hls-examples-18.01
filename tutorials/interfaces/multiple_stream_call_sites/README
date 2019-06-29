@@ -1,0 +1,24 @@
+This design demonstrates use of multiple stream call sites.
+
+All call sites accessing the same stream share one FIFO port. Regions that contain
+multiple reads or writes to the same stream are serialized. That is, the hardware
+corresponding to that region executes only a single thread or loop iteration at a
+time. This serializing approach ensures that the ordering of the reads and writes is
+equivalent when the component runs either as an x86 emulation or on the FPGA
+simulation.
+
+To view multiple stream call sites in high-level design report:
+1. Open the high-level design report by opening the following file in web browser:
+tutorial-fpga.prj/reports/report.html
+2. Click "View Reports" and select "Component viewer".
+3. In the Component list pane, select "reduce_sum".
+4. In the Component view pane, find the two stream read sites from stream
+"int_in".
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

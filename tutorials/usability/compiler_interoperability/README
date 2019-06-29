@@ -1,0 +1,18 @@
+
+Compilation of the accelerated component has to be performed with our the HLS compiler.
+Files that only contain testbench code can be compiled and linked by any compiler. 
+
+The HLS compiler is compatible with x86-64 object code compiled by other compilers.
+The testbench part can be compiled with the native compiler for the platform. That is, 
+gcc/g++ on Linux and the Microsoft C Compiler on Windows (see documentation for
+which compiler versions are supported).
+
+The accelerated component functions and the final link step should be performed with the HLS compiler.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial on Linux:
+  - On Linux run "make"
+  - On Windows run "build"

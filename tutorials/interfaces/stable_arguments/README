@@ -1,0 +1,38 @@
+The HLS compiler creates pipelined components such that multiple invocations of the component 
+can be run concurrently. In order to do this and maintain functional correctness, all arguments 
+must be carried along the pipeline until they are used so that the values of one invocation's 
+arguments are not clobbered by a subsequent invocation. If the intention is for the value of an 
+argument to change infrequently, then there is potentially large overhead of having to carry that 
+data alongside the pipeline.
+
+To tell the HLS compiler that an argument's will not change between concurrent component invocations,
+we use the "hls_stable_argument" attribute in the component's argument list. This removes the
+synchronization with the start and busy signals and feeds the argument directly to where it is
+needed in the data path.
+
+NOTE: If the value of a stable argument is changed while component invocations are still executing,
+      there it no guarantee of which of the old and new values those invocations will use.
+
+This tutorial consists of 2 parts.
+
+part_1_threshold.cpp
+  This design implements a multiply followed by a thresholding operation.
+  Observations:
+    1) View the testbench code in main() and note that the input value for
+       the max_value argument only changes twice in 100 invocations.
+
+part_2_stable_threshold.cpp
+  In this part, the multiply and threshold component from part 1 is modified
+  to mark the max_value argument as stable.
+  Observations:
+    1) Compare this source to that of part 1. Note that the only change is to the max_value argument.
+    2) Navigate to the "Area Analysis of System" view of the report for both this part and the last.
+       As expected, there is an area savings in registers for this design compared to the previous.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

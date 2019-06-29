@@ -1,0 +1,46 @@
+This tutorial demonstrates the use of fixed point math library functions.
+
+To see the trade-offs between accuracy and QoR when you switch from double (or float)
+math functions to fixed-point math functions, compare the numeric results and the QoR
+outcomes for the fixed-point and the floating-point components.
+
+When you use the ac_fixed library, keep the following information in mind:
+
+Input Bit Width and Input Value Range Limits:
+The fixed-point math functions have bit width and input value range requirements.
+All bit width and input value range requirements are documented at the top of the
+ac_fixed_math.h file.
+For example, the sin_fixed and cos_fixed functions require the integer part bit width
+to be 3, and the input value range is [-pi, pi].
+
+Return Types:
+For fixed-point functions, each function has a default return type. Assigning the
+result to a non-default return type triggers a type conversion and can cause an
+increase in logic use or a loss of accuracy in your results.  All return types are
+documented at the top of the ac_fixed_math.h file.
+For example, for sin_fixed and cos_fixed, the input type is ac_fixed<W, 3, true>,
+and the output type is ac_fixed<W-1, 2, true>.
+
+Accuracy:
+The testbench program for this tutorial gives you an estimate of the difference
+between the correct result and the results provided by the math library functions.
+The floating point version (which has a greater bit width in this case) generates a
+more accurate result.
+
+QoR Outcomes:
+Compare the QoR outcomes by comparing the estimated resource usage in the high-level
+design report. By comparing the estimated resource usage for the floating-point
+version and the fixed-point version, you can get an idea of the area savings.
+To view the estimated resource usage:
+1. Open the high-level design report by opening the following file in a web browser:
+tutorial-fpga.prj/reports/report.html
+2. In summary page of the report (the default page), find the "Estimated Resource
+Usage" table.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

@@ -1,0 +1,21 @@
+This design example implements both a interpolation filter and a decimation
+filter that can be easily parameterized by setting the appropriate constants in
+the coefs.h header file. Both components use a polyphase structure for the fir
+filters to improve the hardware re-use of the DSP blocks. 
+
+The default parameterization of the interpolation filter uses 64 taps with 4
+taps per sub-filter. The interpolation factor is set to 16. In this
+parameterization, the component uses 4 DSP blocks and is able to consume a new
+input every 16 cycles, while producing a new output every cycle. This can be
+observed in the Verfication Statistics page in the HTML report after running the
+example design through co-simulation. 
+
+Similarily, the decimation filter also uses 64 taps with 4 taps per sub-filter.
+The decimation factor is set to 16. This component uses 5 DSPs in total and
+consumes a new input every cycle while producing an output every 16 cycles.
+
+Note the use of the --fp-relaxed flag in the Makefile. This relaxes the ordering
+of the floating point operations and allows the Intel HLS Compiler to optimize
+chains of operations. For example, when using the Area Analysis page in the HTML
+report, it can be observed that the compiler inferred a floating point dot
+product engine instead of using a chain of Multiply-Accumulate chains.

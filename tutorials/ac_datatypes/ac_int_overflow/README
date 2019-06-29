@@ -1,0 +1,29 @@
+This design example demonstrates the usage of the ac_int debug macros;
+DEBUG_AC_INT_WARNING and DEBUG_AC_INT_ERROR. These 2 (x86 only) macros
+will make the program check ac_int operations and assignments for overflow
+at runtime.
+
+1. DEBUG_AC_INT_WARNING will  print out a warning everytime an operation
+overflows.
+
+2. (Linux Only) DEBUG_AC_INT_ERROR will print out first overflow operation
+and error out. The user is suggested to use gdb to run the program again and
+back trace where overflow happens.
+
+Two simple designs are showed here:
+1. component table_lookup: the user (mistakenly) uses a 4 bit value to
+index an array of size 32 which needs 5 bits. You can tell from run-time
+print information in DEBUG_AC_INT_WARNING case that during last 16 access
+cause, assigning index value triggers overflow.
+
+2. component counter_add: it's a simple static value adder. The component
+is supposed to return all values passed so far. The user (mistakenly) uses
+a 33 bit unsigned value to sum all inputs. As you can tell from
+DEBUG_AC_INT_WARNING case, overflow happens when sum is beyond 33 bits limits.
+
+This tutorial requires the following tools to be installed:
+  - i++
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

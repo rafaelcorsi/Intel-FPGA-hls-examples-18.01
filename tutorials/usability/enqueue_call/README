@@ -1,0 +1,53 @@
+This tutorial demonstrates the differences between directly calling a HLS
+component and using the ihc_hls_enqueue() and ihc_hls_component_run_all()
+calls. This tutorial uses a very simple component which performs an integer
+multiply. Note that the two methods of calling the component don't affect the
+way the component itself is defined.
+
+Direct Function Call:
+This is the standard way that functions in C/C++ are called. The necessary
+arguments are passed to the component and the result may be stored into an
+appropriate return variable. Similar to the C semantics, this is a blocking
+call. Each call to the component is serialized and the testbench waits for the
+component to fully execute that iteration before proceeding.
+
+Enqueue Call:
+This is the second manner of invoking a HLS component. The ihc_hls_enqueue()
+and ihc_hls_enqueue_noret() calls enqueue a new invocation of the component
+with the provided arguments. They take in a return data pointer (only in the
+case of the former), the function pointer, and the arguments required for that
+particular call. The user can enqueue as many invocations of the component as
+desired. When the ihc_hls_component_run_all() function is invoked with the
+component name, all enqueue calls so far will be pushed to the component and
+the HDL simulator will execute the component in a pipelined manner, trying to
+push in a new iteration every cycle if possible. The results will be stored in
+the provided pointer and is only valid after the ihc_hls_component_run_all()
+call returns.
+
+Once the tutorial is successfully run, observe the waveforms (located at
+tutorial-fpga.prj/verification/vsim.wlf) in Modelsim for the two types of
+function call. In the direct call, it will be apparent that the component calls
+are serialized and a new start is only issued to the component after the
+previous call has asserted done. In the enqueue call case, the testbench is able
+to invoke the component every cycle. The result for each call is availble on the
+return interface after three cycles. While this can be observed in the waveform,
+after executing the testbench, the verification section of the report will be
+populated with the latency and II information for the explicit call as well as
+the enqueued calls. The behavior of this is described in more detail in the HLS
+documentation.
+
+Note that when using ihc_hls_enqueue() and ihc_hls_component_run_all(),
+the user must link against the hls_emul library when compiling with gcc. Observe
+how this is done in the Makefile/build.bat.
+
+Please visit the documentation for information on the concurrency model for different
+function invocations.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - Run make (on Linux)
+  - Run build (on Windows).
+

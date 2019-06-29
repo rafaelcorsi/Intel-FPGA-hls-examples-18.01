@@ -1,0 +1,32 @@
+By default, the HLS compiler assumes that all operations have to be carried out
+in the order in which they occur in the source. One case where the compiler
+cannot know if operations are independent or not is if they depend on pointer
+arguments. To ensure correctness, the compiler must assume that pointers in the
+same address space may point to the same address (ie. they might alias).
+
+If it is known at compile time that a pointer will never alias with any other
+pointer, the restrict keyword can be used to convey this to the compiler. This
+allows the compiler to order and schedule the instructions more aggressively to
+achieve better area and performance.
+
+Note however that adding the restrict keyword is a promise from the designer
+that the function will never be called with multiple pointers pointing to the
+same storage. If that happens, the compiler might not generate code with the
+expected behavior.
+
+The report in <project>/reports/report.html can be used to help identify 
+unnecessarily serialization of operations your component:
+  1) Open Loop analysis. Notice the II of 63 for maybe_aliased and 1 for 
+     non_aliased.
+  2) Open Verification statistics. Notice the latency of 14 for maybe_aliased 
+     and 8 for non_aliased.
+  3) Open Component viewer. Notice the edge between the two stores in the 
+     maybe_aliased component.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

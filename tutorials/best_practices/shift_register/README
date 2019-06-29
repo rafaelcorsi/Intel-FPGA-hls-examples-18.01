@@ -1,0 +1,14 @@
+This tutorial demonstrates the coding style that Intel recommends for
+implementing shift registers.
+
+Note that this tutorial uses the enqueue call to the component. For more
+information, please see the enqueue-call tutorial.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - Run make (on Linux)
+  - Run build (on Windows).
+

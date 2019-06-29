@@ -1,0 +1,48 @@
+This tutorial demonstrates the impact of choosing single precision literals and
+functions over their double precision counterparts.  Users not familiar with
+the C++ standard may inadvertently use double precision literals or functions
+when the single precision version was intended.  Double precision operations
+are more complex and consequently consume more resources and are typically
+higher latency than a single precision implementation.
+
+Care should be taken to:
+  1) Always use single-precision literals (with the 'f' suffix) unless a double
+     precision value is required
+  2) Choose functions that accept and return single-precision float arguments
+     unless the extra precision or range provided by a double precision value 
+     is required
+  3) Explicitly convert double precision floating point values back to single
+     precision values as soon as possible to avoid accidentally performing
+     additional operations in more double precision arithmetic
+
+Examine the code in tutorial.cpp to see how small changes to the source can
+unintentionally result in an operation being performed in double precision.
+Run the makefile and examine the area reports to see the impact double
+precision arithmetic can have.
+
+The area report can help find accidental uses of double precision:
+  1) sp_v_dp_literals
+     - The single precision operation is reported as "Hardened Floating-point 
+       Multiply". The double precision is explicitly reported as "Double-precision 
+       Floating-point Multiply" instead
+     - The double precision version is noticeably larger than single precision
+     - The Fpext and Fptrunc instructions in the double precision area report
+       are indicators that a conversion between double and float is happening
+  2) sp_v_dp_lib_func
+     - The double precision version is almost twice as large as single precision
+     - Note again the presence of Fext and Fptrunc instructions indicating a
+       conversion between double and float
+     - Notice the reference to the larger 'sin' vs. 'sinf' function call
+  3) mixing_sp_and_dp
+     - The double precision version is slightly larger than single precision
+     - Both use a double precision sin function (as expected)
+     - Note the different operation names (Hardened Floating-point Multiply vs. 
+       Double-precision Floating-point Multiply) in the two cases
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim-SE
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

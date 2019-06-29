@@ -1,0 +1,86 @@
+This tutorial demonstrates the impact of using the --fpc and --fp-relaxed flags
+in i++. These two flags are associated with floating point operations and are
+included in the help for i++. They should only be used if the application can
+tolerate small differences in floating-point results.
+
+--------------------------------------------------------------------------------
+--fp-relaxed:
+--------------------------------------------------------------------------------
+This allows the relaxation in the order of arithmetic operations. With regards
+to floating point operations of equal priority, the ordering in which the
+operations are performed can impact the final result due to rounding and
+precision changes.
+For example, assuming a,b,c,d are floats:
+  a + b + c + d != a + (b + (c + d)) != (a + b) + (c + d)
+To ensure that the behavior of the hardware generated is consistent with gcc, it
+is required to execute in the same precise order, preventing the possibility of
+various optimizations that can save area. By default, the generated hardware for
+(a+b+c+d) would look like:
+
+   a     b     c     d
+   |     |     |     |
+    \   /      |     |
+     (+)       |     |
+      |        |     |
+       \       |     |
+        \     /      |
+         \   /       |
+          (+)        |
+           |        /
+            \      /
+             \    /
+              \  /
+               (+)
+                |
+                |
+              Result
+
+This would accordingly have to be pipelined with register chains to achieve high
+throughput. In the example, it is a 32-tap filter. As such, the amount of
+pipeline registers required to conform to this structure can get fairly large
+and does not scale well.
+If the user does not care about the exact ordering in which these operations are
+executed, the user can include the --fp-relaxed flag as a compile time argument
+to i++. This allows the compiler to generate the best structure for the provided
+set of operations. The above example, instead of being a vine-like structure,
+would generate a tree-like structure when --fp-relaxed is enabled.
+
+   a     b     c     d
+   |     |     |     |
+    \   /       \   /
+     (+)         (+)
+      |           |
+       \         /
+        \       /
+         \     /
+          \   /
+           (+)
+            |
+            |
+          Result
+
+Since this produces a shallower structure, it requires fewer pipelining
+registers and scales much better to longer chains as it is log(N) scaling as
+compared to N in the default case.
+
+
+--------------------------------------------------------------------------------
+--fpc:
+--------------------------------------------------------------------------------
+This flag tells the compiler to optimize the intermediate rounding and
+normalization for floating point operations when possible. This reduces the
+amount of hardware necessary for the chain of floating-point operations. The two
+key changes that this flag does are:
+  - Remove floating-point rounding operations and conversions when possible
+  - Carry additional mantissa bits to maintain precision as opposed to applying
+    rounding to the output of a floating-point operation.
+
+For more information on these flags, please refer to the i++ documentation.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

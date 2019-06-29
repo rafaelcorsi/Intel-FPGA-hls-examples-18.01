@@ -1,0 +1,31 @@
+This tutorial demonstrates how to control the initialization behavior of statics in a component.
+
+There are 3 options for the initialization behavior of static variables:
+1. Default: hls_init_on_reset
+2. hls_init_on_reset: the static variable's value will be initialized after reset.
+   The initial component invocation after reset may have a longer latency due to 
+   the hardware required for initialization.
+3. hls_init_on_powerup: the static variable's value will only be initialized on
+   power-up. This uses a MIF file to initialize the memory, which reduces the
+   component's resource utilization and start-up latency.
+
+Please see tutorial.prj/reports/report.html for detailed information on area.
+Compare the area of the two components as shown in the summary page and note
+that "counter_powerup" will use less ALUTs and FFs than "counter_reset".
+
+To view the difference in "start-up latency", compile and run the design through
+simulation and open the waveform tutorial.prj/verification/vsim.wlf. Observe the
+behavior of the start and busy signals for the two components - "counter_reset"
+will have a large latency before which the component is ready (i.e. the busy
+signal goes low when start is asserted high) whereas the "counter_powerup" is
+ready almost instantaneously after the start signal is asserted high. Also note
+that after the first component invocation, the behavior of the two kernels are
+equivalent.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

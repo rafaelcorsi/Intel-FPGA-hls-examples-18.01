@@ -1,0 +1,82 @@
+This tutorial consists of 4 parts, which are best observed in order.
+
+part_1_basic_component.cpp
+  This design implements a component that swaps all 4 bytes of each integer in an array to change
+  its endianness. The subsequent parts of this tutorial will iterate on this component to expose various
+  aspects of the Avalon-MM slave interfaces available through the HLS compiler.
+
+part_2_slave_component.cpp
+  This design is identical to that of part 1, except the component's interface is changed to be
+  implemented as an Avalon-MM Slave interface.
+  Observations:
+    1) Compare the source of this part with that of part 1. Note that the component has been
+       marked as an Avalon slave. Note that there are no changes required to the component call in main(). 
+       The simulation framework automatically takes care of invoking the component correctly based on its 
+       implementation.
+    2) Look at part_2_slave_component.prj/components/swp_int_end/swp_int_end_inst.v 
+       and compare it to that of part 1. Note that the start, busy, done, and stall signals are now gone
+       and the "cra" Avalon-MM Slave interface has been added. As well, a "done_irq" interrupt output 
+       has been added.
+    3) Look at part_2_slave_component.prj/components/swp_int_end/swp_int_end_csr.h
+       and note the location of the component's control signals in the memory map.
+    4) Open the simulation waveform (part_2_slave_component.prj/verification/vsim.wlf) in Modelsim and view
+       the signals on the swp_int_end_inst interface. Observe the writes to the component's
+       slave interface and compare them to the slave's memory map. See that the compoent's completion is signalled
+       by the interrupt, and the done register is read to confirm.
+  
+part_3_slave_register_arguments.cpp
+  This design adds the component's arguments to the memory map of the component's Avalon-MM Slave interface.
+  NOTE: Each argument's interface can be controlled individually, and a non-slave component can have slave arguments.
+  Observations:
+    1) Compare the source of this part with that of part 2. Note that each of the component's arguments have
+       been marked as slave registers.
+    2) Look at part_3_slave_register_arguments.prj/components/swp_int_end/swp_int_end_inst.v
+       and compare it to part 2. Notice that the "x" and "N" inputs to the module have been removed, and that the "cra" 
+       slave interface's address bus is now 3-bits instead of 2. 
+    3) Compare part_3_slave_register_arguments.prj/components/swp_int_end/swp_int_end_csr.h
+       to that of part 2 and note that the "x" and "N" arguments are now included in the component slave's memory map.
+       The argument "x" is 64-bits wide because by C semantics it is an address on a 64-bit architecture.
+    4) Open the simulation waveform (part_3_slave_register_arguments.prj/verification/vsim.wlf) in Modelsim and view 
+       the signals on the swp_int_end_inst interface. Note that the arguments are written to their
+       respective registers before the start register is written.
+    5) Navigate to the "Component viewer" view of the report and observe the loads and stores
+       connected to global memory. This naive implementation of byte accesses has resulted in 4 loads and
+       4 stores all competing for one memory interface, which leads to stalls and inefficient usage of the 64-bit bus.
+       We could fix this by specializing our memory interface (see the pointer-mm_master tutorial), or we can 
+       direct the compiler to generate a specialized memory inside the component for this application (see next part).
+
+part_4_slave_mem_args.cpp
+  This design replaces the pointer (Avalon MM-Master) interface with a slave memory that stores the integer array
+  input inside the component using M20Ks. This internal memory's architecture is then optimized for the access pattern
+  in the component's datapath.
+  Observations:
+    1) Compare the source of this part with that of part 3. Note that the only difference is a change to the 
+       input argument "x" from a slave register to a slave memory. This attribute change is what replaces the 
+       Avalon-MM master interface with an Avalon-MM slave.
+       NOTE: The size of the memory is specified in bytes.
+    2) Look at part_4_slave_mem_args.prj/components/swp_int_end/swp_int_end_inst.v 
+       and note that the master interface has been replaced by a slave. Also note that unlike the component interface
+       and slave register arguments, the slave memory argument has its own dedicated slave interface.
+    3) Look at part_4_slave_mem_args.prj/components/swp_int_end/swp_int_end_csr.h
+       and note that the argument "x" is no longer an entry in the memory map. This is because slave memories
+       get their own Avalon-MM Slave interfaces, as observed in (2).
+    4) Navigate to the "Component viewer" view of the report and observe that the global memory has been replaced
+       by a memory internal to the component. Also note that the loads and stores have been coalesced into
+       one load and one store, each of which access the internal memory from their own ports so that they are
+       stall-free accesses.
+    5) Navigate to the "Area analysis of system" view of the report and compare the area numbers with those of
+       part 3. Note that even though the component now has to implement a memory internally, the area has decreased
+       significantly because the memory interconnect arbitration and datapath control logic have both been greatly
+       simplified.
+    6) Navigate to the "Verification statistics" view of the report and compare the latency of this component with
+       that of part 3. The significant decrease in the latency of the component is also due to the optimized memory
+       configuration.
+
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

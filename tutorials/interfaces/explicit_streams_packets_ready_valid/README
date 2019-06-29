@@ -1,0 +1,35 @@
+This tutorial consists of 3 parts, which are best observed in order.
+
+part1_threshold.cpp
+  This design implements a component that thresholds pixel values in an image over a stream.
+
+part2_threshold_packets.cpp
+  The functionality of this design is identical to that of part 1, except the component uses start of packet and
+  end of packet signals on the streams to determine the beginning and end of the image.
+  Observations:
+    1) Compare the source of this part with that of part 1. Note that the component no longer requires the width
+       and height inputs.
+    2) Compare the example instantiations part1_threshold.prj/components/threshold/threshold_inst.v and
+       part2_threshold_packets.prj/components/threshold/threshold_inst.v and note the additional signals on the
+       stream interfaces.
+    3) Open the report.html for both parts and compare the estimated resource utilization. Note the resource savings 
+       in part 2.
+  
+part3_threshold_no_ready_valid.cpp
+  This design removes the valid from the input stream and the ready from the output stream so that the component has a
+  guarantee that the read and write operations to the streams will not stall its pipeline. This allows the compiler to 
+  optimize these stream accesses and the logic surrounding them.
+    1) Compare the source of this part with that of part 2. Note the additonal parameters on the stream interfaces.
+    2) Compare the example instantiations part2_threshold_packets.prj/components/threshold/threshold_inst.v and
+       part3_threshold_no_ready_valid.prj/components/threshold/threshold_inst.v and note the removed signals on the
+       stream interfaces.
+    3) Open the report.html for both parts and compare the estimated resource utilization. Note the resource savings 
+       in part 3.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

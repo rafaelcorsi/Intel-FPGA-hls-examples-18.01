@@ -1,0 +1,37 @@
+
+This tutorial demonstrates use of the ivdep and safelen pragmas.  The ivdep 
+pragma explicitly tells the compiler that there are no implicit loop-carried
+memory dependencies.  In this example, there is a dependency in  the inner
+loop caused by the read-after-write of the array "tmp_buf".  However, this
+dependency will only occur every SIZE iterations of the outer loop. While the
+pragma ivdep by itself is a promise of NO implicit loop carried dependence,
+we can express how many consequtive iterations that are independent with
+ivdep safelen(X) where X is how many iterations there are between the implicit
+loop-carried dependencies.
+Since we have a dependence on the iteration SIZE iterations away we can tell
+that to the compiler with ivdep safelen(SIZE).
+
+After running the tutorial, you can look at the reports to see the effects of
+enabling the ivdep pragma.
+
+Open the report for vector_add.cpp with the ivdep pragma disabled, located here:
+    transpose_and_fold_no_ivdep.prj/reports/report.html
+Navigate to the "Loops analysis" view of the report and observe that the
+reported II of Block3 is 2, and this block has an II bottleneck.  Next, navigate
+to the "Component viewer" view of the report and observe that Block3 is colored
+red, indicating that the block now has an II greater than 1.
+
+Open the report for vector_add.cpp with the ivdep pragma enabled, located here:
+    transpose_and_fold_ivdep.prj/reports/report.html
+Navigate to the "Loops analysis" view of the report and observe the reported II
+of Block3.  Notice that the II for this block is now 1.  Next, navigate to the
+"Component viewer" view of the report and observe that Block3 is no longer colored
+red, indicating that the block now has an II of 1.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

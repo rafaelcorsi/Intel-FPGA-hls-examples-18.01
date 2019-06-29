@@ -1,0 +1,21 @@
+This tutorial demonstrates how the user can merge memories in a depth-wise
+manner and when this could be beneficial. In this example, accesses to memories
+'a' and 'b' are mutually exclusive. By using the 'merge' attribute to merge the
+two memories, the compiler can also merge loads/stores to a and b due to their
+mutual exclusivity. This will result in better resource utilization without
+sacrificing performance.
+
+Other users with more area-sensitive designs may choose to merge memories that
+don't have mutually exclusive accesses. This can still result in better area
+usage, but may cause a degradation in performance.
+
+Examine the code in tutorial.cpp to see how a user can tell the compiler to
+merge two memories. Run the makefile and examine the system viewer to see the 
+impact of depth-wise merging.
+
+This tutorial requires the following tools to be installed:
+  - i++
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

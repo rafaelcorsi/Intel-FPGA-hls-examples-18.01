@@ -1,0 +1,37 @@
+Pointer swapping is a common practice in software design to avoid copying large amounts of data. For example the operation of updating a loop-carried variable, a = a * b, can be implemented by creating two buffers and their corresponding pointers. However, this technique only works with component memories today, so an alternative technique is required when using registers to implement the buffer. This example demonstrates the use of registers with a deep copy to improve the area and performance of a design.
+
+The following C++ programs in this tutorial each perform a matrix accumulation function: matrixResult = A_NUM_MATRICES*...*A_3*A_2*A_1.
+
+--------------------------------------------------------------------------------
+1_ptr_swap_mem.cpp
+--------------------------------------------------------------------------------
+The matrices are accumulated in the loop using pointer swapping; consequently, the compiler implements the buffers using memories. The buffer containing the final result is returned.
+
+--------------------------------------------------------------------------------
+2_ptr_swap_reg.cpp
+--------------------------------------------------------------------------------
+Motivated by the desire for better QoR, the buffers are implemented using registers with pointer swapping. Although this test passes when run purely as an x86-64 binary, the compiler produces an error: "hls_register attribute is given but cannot implement the storage in register". This is because pointer swapping is currently not supported with registers.
+
+--------------------------------------------------------------------------------
+3_deep_cpy_reg.cpp
+--------------------------------------------------------------------------------
+Using a deep copy rather than a pointer swap allows the compiler to implement the buffers using registers. When the buffers are implemented using registers, the assignments of the deep copy happen simultaneously within a single clock cycle and require no extra logic on the FPGA implementation. Therefore, this design, which uses registers with a deep copy, yields the best QoR.
+
+
+To see the improvement between designs, open the following files in a web browser:
+- 1_ptr_swap_mem/reports/report.html
+- 3_deep_cpy_reg/reports/report.html
+
+When you review the area estimates, you can see how the deep copy design compares to the pointer swap design:
+- The deep copy design uses less than 15% of the number of ALUTs than the pointer swap design
+- The deep copy design uses less than 40% of the number of FFs than the pointer swap design
+- The deep copy design does not use RAMs, unlike the pointer swap design
+
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

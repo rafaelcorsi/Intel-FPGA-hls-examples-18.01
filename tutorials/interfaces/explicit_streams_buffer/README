@@ -1,0 +1,22 @@
+This tutorial demonstrates an example of explicit stream_in and stream_out.
+These two interfaces providing streaming inputs and outputs to any point in the
+component. Streams can be blocking or non-blocking. The example provided here
+exhibits the blocking calls. Observe how the testbench interacts with the input
+and output streams. The input stream must be fully loaded with all the data for
+a particular function call before invoking the component. Similarly, the output
+stream data is invalid until the component is executed. The streams are
+implemented in the testbench as a buffer. If during one invocation of a
+component, the stream_in's data is not fully consumed, it will appear in a later
+call to the same component.
+
+Components with explicit input streams can also specify the capacity of the
+buffer on the input. This can help avoid some amount of bubbles in the pipeline
+in case the component itself stalls.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Modelsim
+
+To run this tutorial:
+  - Run make (on Linux)
+  - Run build (on Windows).

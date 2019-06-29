@@ -1,0 +1,30 @@
+When optimizing a design, not only changing the algorithm might help, but also
+choosing the right interface can effectively improve the QoR. However, sometimes
+the system that a component will be added to dictates what interfaces must be
+used.  This tutorial uses vector addition as an example and demonstrates how
+choosing different interfaces can impact the QoR of a component without changing
+the algorithm. 
+
+This tutorial contains 5 parts, part_1_pointer, part_2_mm_master,
+part_3_mm_slave, part_4_stream, and part_5_pass_by_value, where each part uses a
+different interafce type.
+
+After running the tutorial, review each area report for the different parts of
+the tutorial and observe how the area estimate changes across the different
+interface types. 
+
+Depending on your design constraints, you might need to experiment and find the
+interface that is applicable and best-suited for your design. 
+
+For more details and explanation of implications of choosing different
+interfaces, see "Choosing the Best Interface for Your Component" in the Intel
+High Level Synthesis Best Practices Guide
+(https://www.altera.com/documentation/nml1505158467345.html). 
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"

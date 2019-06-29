@@ -1,0 +1,29 @@
+This tutorial demonstrates how integer promotion rules can influence the
+behavior of a C or C++ program.  The standards allow a compiler to convert
+objects of an integral type to another wider integral type.  Many compilers
+promote all objects of shorter integral types (such as short and char) to int
+or unsigned int.  The i++ compiler does not perform integer promotion unless
+the --promote-integers flag is provided on the command line.  Consequently,
+you may observe a difference in behavior between i++ and other C++ compilers
+in programs that rely on integer promotion behavior.
+
+If a functional mismatch is observed between the output of the i++ compiler
+and another C++ compiler, the --promote-integers flag can be provided to force
+i++ to apply the commonly used integer promotion rules.  Intel does not
+recommend using the --promote-integers flag in production code as it typically
+introduces significant area overhead to the synthesized component.
+
+The testbench part can be compiled with the native compiler for the platform. That is,
+gcc/g++ on Linux and the Microsoft C Compiler on Windows (see documentation for
+which compiler versions are supported).
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - ModelSim-SE
+
+To run this tutorial:
+  - On Linux run "make"
+  - On Windows run "build"
+
+Observe the different behavior resulting from the use of i++ only and the
+combination of i++ and the --promote-integers flag.

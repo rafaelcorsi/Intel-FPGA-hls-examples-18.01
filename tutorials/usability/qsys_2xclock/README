@@ -1,0 +1,33 @@
+This tutorial contains a very simple component which produces an interface with
+a clock and clock2x signal. This can occur when the memory architecture produced
+by the compiler has double-pumped memory. These are M20K blocks which operate at
+twice the frequency of the logic and effectively act as if they have twice the
+number of ports.
+
+This tutorial demonstrates how to take the generated component and incorporate
+it in a Qsys system with a PLL which can produce the clock and the clock2x
+signals for the component. After running the tutorial, open the Qsys system and
+observe the PLL settings. The PLL takes in a reference clock and produces two
+output clock signals. Note that one clock is set to generate twice the frequency
+of the other and that the two clocks are generated in phase with each other. 
+
+The system also contains a reset synchronizer block which provides the reset to
+the component. The purpose of the synchronizer block is to ensure that the
+de-assertion of the reset is synchronized to the positive edge of the clock.
+Observe the way which the clock and reset signals are connected to the component
+from the PLL and the synchronizer block in the "System Contents" view.
+
+This tutorial requires the following tools to be installed:
+  - i++
+  - Qsys
+
+To run this tutorial:
+  - Run make (on Linux) 
+  - Run build (on Windows). 
+
+This will generate the Qsys system top.qsys but will not generate the HDL
+associated with it. Once generated, the Qsys system can be viewed with the
+following command:
+  - qsys-edit top.qsys
+The top.qsys file can also be used to generate the Qsys system or to compile in
+a Quartus project.
